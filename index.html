@@ -50,7 +50,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white " href="">
+          <a class="nav-link text-white " href="https://drive.google.com/file/d/1oYQJq-uYpe3UUPwz7A3kq6W1HWr6KNs1/view">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">table_view</i>
             </div>
@@ -58,7 +58,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white " href="./pages/billing.html">
+          <a class="nav-link text-white " href="https://github.com/Shah-Ansh/diet-analysis">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">code</i>
             </div>
@@ -66,7 +66,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white " href="./pages/billing.html">
+          <a class="nav-link text-white " href="">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">camera</i>
             </div>
@@ -92,14 +92,14 @@
           <div class="card">
             <div class="card-header pb-0">
               <!-- <h4>Comparative Analysis of Balanced Diet Indices of different countries across various years and EAT-Lancet Recommendations</h4> -->
-            </div>
-            <div class="card-body px-0 pb-2">
-              <div id="map-container">
-                <svg id="my_dataviz" width="1000" height="800"></svg>
-              </div>
-              <div class="slider_container">
-                <div class="current-year" id="current-year">1961</div>
-                <input type="range" id="yearSlider" min="1961" max="2020" value="1961" class="slider" />
+              <div class="card-body px-0 pb-2">
+                <div id="map-container" class="svg-container">
+                  <svg id="my_dataviz"></svg>
+                </div>
+                <div class="slider_container">
+                  <div class="current-year" id="current-year">1961</div>
+                  <input type="range" id="yearSlider" min="1961" max="2020" value="1961" class="slider" />
+                </div>
               </div>
             </div>
           </div>
@@ -125,7 +125,7 @@
             <div class="card-header pb-0">
               <h5>Analysis of Balanced Diet Index over time </h5>
             </div>
-            <div class="card-body px-0 pb-2">
+            <div class="card-body px-0 pb-2" style="display: flex;justify-content: center;align-items: center;">
               <span id="scatter"></span>
             </div>
           </div>
@@ -135,7 +135,7 @@
             <div class="card-header pb-0">
               <h5>Dietary Composition of a particular country</h5>
             </div>
-            <div class="card-body p-3">
+            <div class="card-body p-3" style="display: flex;justify-content: center;align-items: center;">
               <span id="chart"></span>
           </div>
         </div>

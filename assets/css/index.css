@@ -3,10 +3,6 @@ body {
   /* background-color: gray; */
 }
 
-.map-container {
-  width: 1200px; /* Set the width of the graph container */
-  height: 800px; /* Set the height of the graph container */
-}
 
 .slidecontainer {
   visibility: hidden;
@@ -157,4 +153,9 @@ body {
 
 .current-year {
   font-weight: bold;
+}
+
+#my_dataviz{
+  min-height: 70vh;
+  width: 100%;
 }
