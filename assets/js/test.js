@@ -292,6 +292,16 @@ var clickfunc = function (event, d) {
 
       paths.transition().duration(100).attr("d", arc);
     });
+    // svg
+    //   .attr("width", width_svg / 3)
+    //   .attr("height", height_svg / 2)
+    //   .attr("viewBox", `0 0 ${width_svg / 3} ${height_svg / 2}`)
+    //   .attr("preserveAspectRatio", "xMidYMid meet");
+    // svg_2
+    //   .attr("width", width_svg / 1.8)
+    //   .attr("height", height_svg / 1.8)
+    //   .attr("viewBox", `0 0 ${width_svg / 1.8} ${height_svg / 1.8}`)
+    //   .attr("preserveAspectRatio", "xMidYMid meet");
   }
 
   // Initial load
