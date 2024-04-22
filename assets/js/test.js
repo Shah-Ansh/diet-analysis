@@ -8,11 +8,8 @@ var margin = { top: 10, right: 30, bottom: 30, left: 60 },
 var country;
 var slidecontainer = document.getElementById("tooltipSlider");
 const currentYearDisplay = document.getElementById("current-year");
-var MapScale = 130;
-let topo;
-var isClickedOnce = false;
-// function loadData(year);
 
+console.log(width_svg, height_svg);
 function debounce(func, delay) {
   let timer;
   return function () {
@@ -26,7 +23,6 @@ function debounce(func, delay) {
 }
 
 var clickfunc = function (event, d) {
-  isClickedOnce = true;
   d3.select("#scatter svg").remove();
   d3.select("#chart svg").remove();
 
@@ -34,7 +30,7 @@ var clickfunc = function (event, d) {
   let svg_2 = d3
     .select("#scatter")
     .append("svg")
-    .attr("width", width_svg / 1.8)
+    .attr("width", width_svg / 1.1)
     .attr("height", height_svg / 1.8)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -81,7 +77,10 @@ var clickfunc = function (event, d) {
     // Create y scale for linear values
     y = d3
       .scaleLinear()
-      .domain([d3.min(data, (d) => d.Score) - 1, d3.max(data, (d) => d.Score) + 1]) // Adjusted scale domain
+      .domain([
+        d3.min(data, (d) => d.Score) - 1,
+        d3.max(data, (d) => d.Score) + 1,
+      ]) // Adjusted scale domain
       .range([height_svg / 2, 0]);
 
     // Add x-axis
@@ -119,10 +118,53 @@ var clickfunc = function (event, d) {
       .attr("r", 5)
       .attr("fill", "#69b3a2");
 
+
+    // Append a vertical line for mouse pointer tracking
+    var verticalLine = svg_2
+    .append("line")
+    .attr("class", "vertical-line")
+    .attr("stroke", "black")
+    .attr("stroke-dasharray", "3")
+    .attr("x1", 0)
+    .attr("y1", 0)
+    .attr("x2", 0)
+    .attr("y2", height_svg)
+    .style("display", "none");
+
+  // Append a tooltip div to the body of the document
+  var tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  // Add mouseover event listener to dots
+  svg_2
+    .selectAll("circle")
+    .on("mouseover", function (event, d) {
+      verticalLine
+        .attr("x1", x(d.Year))
+        .attr("x2", x(d.Year))
+        .style("display", null);
+      d3.select(this).attr("r", 8);
+      tooltip.transition().duration(200).style("opacity", 0.9);
+      tooltip
+        .html("Year: " + d.Year.getFullYear() + "<br/>Score: " + d.Score)
+        .style("left", event.pageX + 20 + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function (event, d) {
+      verticalLine.style("display", "none");
+      d3.select(this).attr("r", 5);
+      tooltip.transition().duration(500).style("opacity", 0);
+    });
+
     d3.selectAll("#yearSlider").on("input", function () {
       flag_for_execution = 1;
       selectedYear = +this.value;
-      let filteredData = data.filter((d) => d.Year <= new Date(selectedYear, 0)); // Filter data based on selected year
+      let filteredData = data.filter(
+        (d) => d.Year <= new Date(selectedYear, 0)
+      ); // Filter data based on selected year
       x.domain([new Date(1961, 0), new Date(selectedYear, 0)]); // Update x domain
       xAxis.call(d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"))); // Format ticks to show only years
 
@@ -152,6 +194,26 @@ var clickfunc = function (event, d) {
           (update) => update.attr("cx", (d) => x(d.Year)),
           (exit) => exit.remove() // Remove excess circles
         );
+
+        svg_2
+        .selectAll("circle")
+        .on("mouseover", function (event, d) {
+          verticalLine
+            .attr("x1", x(d.Year))
+            .attr("x2", x(d.Year))
+            .style("display", null);
+          d3.select(this).attr("r", 8);
+          tooltip.transition().duration(200).style("opacity", 0.9);
+          tooltip
+            .html("Year: " + d.Year.getFullYear() + "<br/>Score: " + d.Score)
+            .style("left", event.pageX + 20 + "px")
+            .style("top", event.pageY - 28 + "px");
+        })
+        .on("mouseout", function (event, d) {
+          verticalLine.style("display", "none");
+          d3.select(this).attr("r", 5);
+          tooltip.transition().duration(500).style("opacity", 0);
+        });
 
       // Update selected year text
       selectedYearText.text(selectedYear);
@@ -194,7 +256,11 @@ var clickfunc = function (event, d) {
     .attr("height", height_svg / 2);
 
   // Initialize tooltip
-  const tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+  const tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 
   // Load data from CSV
   function loadData(year) {
@@ -212,17 +278,19 @@ var clickfunc = function (event, d) {
     var p2 = year;
     d3.csv("final.csv").then(function (data) {
       // Filter data based on Country and Year
-      let filteredData = data.filter((d) => d.Country == country && d.Year == p2);
+      let filteredData = data.filter(
+        (d) => d.Country == country && d.Year == p2
+      );
       // Extract labels and values from filtered data
       if (filteredData.length == 0) {
         svg.selectAll("g").remove();
         svg
           .append("image")
-          .attr("xlink:href", "./no-data-found.avif")
-          .attr("width", window.innerWidth / 4)
-          .attr("height", window.innerHeight / 2)
-          .attr("x", window.innerWidth / 24)
-          .style("margin", "auto");
+          .attr("xlink:href", "../assets/no-data-found.avif")
+          .attr("width", width_svg / 3.2)
+          .attr("height", height_svg / 2)
+          .attr("x", 0)
+          .attr("y", height_svg / 8);
         return;
       }
       let pieData = Object.keys(filteredData[0])
@@ -240,7 +308,17 @@ var clickfunc = function (event, d) {
       let radiusScale = d3.scaleLinear().range([50, 200]).domain([0, maxValue]);
 
       // Color scale
-      let colorScale = d3.scaleOrdinal().range(["pink", "orange", "red", "brown", "yellow", "skyblue", "green"]);
+      let colorScale = d3
+        .scaleOrdinal()
+        .range([
+          "pink",
+          "orange",
+          "red",
+          "brown",
+          "yellow",
+          "skyblue",
+          "green",
+        ]);
 
       // Pie chart layout
       let pie = d3
@@ -257,7 +335,9 @@ var clickfunc = function (event, d) {
         });
 
       // Group element for the pie chart
-      let g = svg.append("g").attr("transform", `translate(${width_svg / 5.67}, ${height_svg / 4})`);
+      let g = svg
+        .append("g")
+        .attr("transform", `translate(${width_svg / 6}, ${height_svg / 4})`);
 
       // Path elements for the arcs
       let paths = g
@@ -292,16 +372,6 @@ var clickfunc = function (event, d) {
 
       paths.transition().duration(100).attr("d", arc);
     });
-    // svg
-    //   .attr("width", width_svg / 3)
-    //   .attr("height", height_svg / 2)
-    //   .attr("viewBox", `0 0 ${width_svg / 3} ${height_svg / 2}`)
-    //   .attr("preserveAspectRatio", "xMidYMid meet");
-    // svg_2
-    //   .attr("width", width_svg / 1.8)
-    //   .attr("height", height_svg / 1.8)
-    //   .attr("viewBox", `0 0 ${width_svg / 1.8} ${height_svg / 1.8}`)
-    //   .attr("preserveAspectRatio", "xMidYMid meet");
   }
 
   // Initial load
@@ -317,30 +387,47 @@ var clickfunc = function (event, d) {
   );
 };
 
-var tooltip_map = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+var tooltip_map = d3
+  .select("body")
+  .append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 0);
 
 var mouseOver = function (event, d) {
   d3.selectAll(".Country").transition().duration(200).style("opacity", 0.5);
-  d3.select(this).transition().duration(200).style("opacity", 1).style("stroke", "black").style("cursor", "pointer");
+  d3.select(this)
+    .transition()
+    .duration(200)
+    .style("opacity", 1)
+    .style("stroke", "black")
+    .style("cursor", "pointer");
 
   // Update tooltip content
   let countryName = d.properties.name;
   let countryValue = d.total.toFixed(2);
   tooltip_map.html(`
   <div class="country-and-year"><span class="country"><b>${countryName}</b><br></span><span class="year">${year}</span></div>
-  <div class="score"><span class="score-heading">Balanced Diet Index (BDI)</span> <br> <span class="score-value" style="color: ${colorScale(countryValue)};"><b>${countryValue}</b></span></div>
+  <div class="score"><span class="score-heading">Balanced Diet Index (BDI)</span> <br> <span class="score-value" style="color: ${colorScale(
+    countryValue
+  )};"><b>${countryValue}</b></span></div>
   </div>`);
 
   // Show tooltip
   tooltip_map.transition().duration(100).style("opacity", 0.9);
 
   // Set tooltip position
-  tooltip_map.style("left", event.pageX + "px").style("top", event.pageY + "px");
+  tooltip_map
+    .style("left", event.pageX + "px")
+    .style("top", event.pageY + "px");
 };
 
 var mouseLeave = function (event, d) {
   d3.selectAll(".Country").transition().duration(200).style("opacity", 1);
-  d3.select(this).transition().duration(200).style("stroke", "transparent").style("cursor", "default");
+  d3.select(this)
+    .transition()
+    .duration(200)
+    .style("stroke", "transparent")
+    .style("cursor", "default");
 
   // Hide tooltip
   tooltip_map.transition().duration(200).style("opacity", 0);
@@ -356,8 +443,62 @@ slider.oninput = function () {
 
   data.clear();
 
+  // Create SVG for legends
+  const legendSvg = d3
+    .select("svg")
+    .append("g")
+    .attr("class", "legend")
+    .attr("transform", "translate(20,20)"); // Adjust the position of the legend as needed
+
+  // Define color scale domain for legend
+  const legendDomain = [0, 1, 3.5, 4, 5, 6.5, 7, 7.5, 8];
+  const legendColors = d3.schemeBlues[9];
+
+  // Create legend color scale
+  const legendColorScale = d3
+    .scaleLinear()
+    .domain(legendDomain)
+    .range(legendColors);
+
+  // Calculate legend block width
+  const legendBlockWidth = 20; // Adjust the width of legend blocks as needed
+
+  // Append rectangles for legend
+  legendSvg
+    .selectAll("rect")
+    .data(legendColors)
+    .enter()
+    .append("rect")
+    .attr("x", (d, i) => i * legendBlockWidth)
+    .attr("y", 0)
+    .attr("width", legendBlockWidth)
+    .attr("height", 10) // Adjust the height of legend blocks as needed
+    .style("fill", (d, i) => legendColors[i]);
+
+  // Append text labels for legend
+  legendSvg
+    .selectAll("text")
+    .data(legendDomain)
+    .enter()
+    .append("text")
+    .attr("x", (d, i) => i * legendBlockWidth)
+    .attr("y", 25) // Adjust the y position of legend labels as needed
+    .text((d) => d)
+    .style("font-size", "10px");
+
+  // Append legend title
+  legendSvg
+    .append("text")
+    .attr("x", 0)
+    .attr("y", -5)
+    .text("Balanced Diet Index (BDI)")
+    .style("font-size", "12px")
+    .style("font-weight", "bold");
+
   Promise.all([
-    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+    d3.json(
+      "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+    ),
     d3.csv("final_nutrition.csv", function (d) {
       if (d.Year == year) {
         data.set(d.Code, +d.Score);
@@ -387,31 +528,42 @@ slider.oninput = function () {
 };
 
 // The svg
-let svg_map = d3.select("svg");
-(width = screen.width / 2), (height = screen.height / 2);
+let svg_map = d3.select("svg"),
+  width = +svg_map.attr("width"),
+  height = +svg_map.attr("height");
 
 // Map and projection
 let path = d3.geoPath();
 let projection = d3
   .geoMercator()
-  .scale(MapScale)
+  .scale(140)
   .center([0, 20])
   .translate([width / 2, height / 2]);
 
 // Data and color scale
 let data = new Map();
 // console.log(d3.schemeBlues);
-let colorScale = d3.scaleThreshold().domain([0, 1, 3.5, 4, 5, 6.5, 7, 7.5, 8]).range(d3.schemeBlues[9]);
+let colorScale = d3
+  .scaleThreshold()
+  .domain([0, 1, 3.5, 4, 5, 6.5, 7, 7.5, 8])
+  .range(d3.schemeBlues[9]);
 
 // Create SVG for legends
-const legendSvg = d3.select("svg").append("g").attr("class", "legend").attr("transform", "translate(20,20)"); // Adjust the position of the legend as needed
+const legendSvg = d3
+  .select("svg")
+  .append("g")
+  .attr("class", "legend")
+  .attr("transform", "translate(20,20)"); // Adjust the position of the legend as needed
 
 // Define color scale domain for legend
 const legendDomain = [0, 1, 3.5, 4, 5, 6.5, 7, 7.5, 8];
 const legendColors = d3.schemeBlues[9];
 
 // Create legend color scale
-const legendColorScale = d3.scaleLinear().domain(legendDomain).range(legendColors);
+const legendColorScale = d3
+  .scaleLinear()
+  .domain(legendDomain)
+  .range(legendColors);
 
 // Calculate legend block width
 const legendBlockWidth = 20; // Adjust the width of legend blocks as needed
@@ -440,11 +592,19 @@ legendSvg
   .style("font-size", "10px");
 
 // Append legend title
-legendSvg.append("text").attr("x", 0).attr("y", -5).text("Balanced Diet Index (BDI)").style("font-size", "12px").style("font-weight", "bold");
+legendSvg
+  .append("text")
+  .attr("x", 0)
+  .attr("y", -5)
+  .text("Balanced Diet Index (BDI)")
+  .style("font-size", "12px")
+  .style("font-weight", "bold");
 
 // Load external data and boot
 Promise.all([
-  d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+  d3.json(
+    "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+  ),
   d3.csv("final_nutrition.csv", function (d) {
     if (d.Year == year) {
       data.set(d.Code, +d.Score);
@@ -452,7 +612,7 @@ Promise.all([
     }
   }),
 ]).then(function (loadData) {
-  topo = loadData[0];
+  let topo = loadData[0];
 
   // Draw the map
   svg_map
@@ -471,8 +631,9 @@ Promise.all([
     .on("mouseover", mouseOver)
     .on("mouseleave", mouseLeave)
     .on("mousemove", function (event) {
-      tooltip_map.style("left", event.pageX + 10 + "px").style("top", event.pageY + 10 + "px");
+      tooltip_map
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY + 10 + "px");
     })
     .on("click", clickfunc);
-  svg_map.attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet");
 });
